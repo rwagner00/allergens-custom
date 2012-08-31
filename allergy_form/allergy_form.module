@@ -1,0 +1,214 @@
+<?php 
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function allergy_form_form_allergy_test_node_form_alter(&$form, &$form_state, $form_id) {
+  $form['#validate'][] = 'allergy_form_allergy_test_title_alter';
+  $form['title']['#default_value'] = 'placeholder';
+  $form['title'] = array('#type' => 'hidden');
+  
+  $form['ssn1']['und']['#prefix'] = '<table><legend><h5>Social Security Number</h5></legend><tr><td>';
+  $form['ssn1']['und']['#suffix'] = '</td>';
+  $form['ssn2']['und']['#prefix'] = '<td>';
+  $form['ssn2']['und']['#suffix'] = '</td>';
+  $form['ssn3']['und']['#prefix'] = '<td>';
+  $form['ssn3']['und']['#suffix'] = '</td></tr></table></fieldset>';
+  
+  $form['cat_pelt']['und']['#prefix'] = '<table><legend><h5>Antigen Panel #3</h5></legend><tr><td>';
+  $form['cat_pelt']['und']['#suffix'] = '</td>';
+  $form['cat_hair']['und']['#prefix'] = '<td>';
+  $form['cat_hair']['und']['#suffix'] = '</td>';
+  $form['dog_hair']['und']['#prefix'] = '<td>';
+  $form['dog_hair']['und']['#suffix'] = '</td>';
+  $form['cockroach']['und']['#prefix'] = '<td>';
+  $form['cockroach']['und']['#suffix'] = '</td>';
+  $form['mite_farinae']['und']['#prefix'] = '<td>';
+  $form['mite_farinae']['und']['#suffix'] = '</td></tr>';
+  $form['curvularia']['und']['#prefix'] = '<tr><td>';
+  $form['curvularia']['und']['#suffix'] = '</td>';
+  $form['epidermophyton']['und']['#prefix'] = '<td>';
+  $form['epidermophyton']['und']['#suffix'] = '</td>';
+  $form['fusarium']['und']['#prefix'] = '<td>';
+  $form['fusarium']['und']['#suffix'] = '</td>';
+  $form['helminthosporium']['und']['#prefix'] = '<td>';
+  $form['helminthosporium']['und']['#suffix'] = '</td>';
+  $form['hormodendrum']['und']['#prefix'] = '<td>';
+  $form['hormodendrum']['und']['#suffix'] = '</td></tr></table>';
+  
+  $form['mite_petronyssi']['und']['#prefix'] = '<table><legend><h5>Antigen Panel #4</h5></legend><tr><td>';
+  $form['mite_petronyssi']['und']['#suffix'] = '</td>';
+  $form['feathers_mix']['und']['#prefix'] = '<td>';
+  $form['feathers_mix']['und']['#suffix'] = '</td>';
+  $form['ap_house_dust']['und']['#prefix'] = '<td>';
+  $form['ap_house_dust']['und']['#suffix'] = '</td>';
+  $form['pcn_mix']['und']['#prefix'] = '<td>';
+  $form['pcn_mix']['und']['#suffix'] = '</td>';
+  $form['horse_hair']['und']['#prefix'] = '<td>';
+  $form['horse_hair']['und']['#suffix'] = '</td></tr>';
+  $form['mucor']['und']['#prefix'] = '<tr><td>';
+  $form['mucor']['und']['#suffix'] = '</td>';
+  $form['pullularia']['und']['#prefix'] = '<td>';
+  $form['pullularia']['und']['#suffix'] = '</td>';
+  $form['rhizopus']['und']['#prefix'] = '<td>';
+  $form['rhizopus']['und']['#suffix'] = '</td>';
+  $form['stemphylium_botrysum']['und']['#prefix'] = '<td>';
+  $form['stemphylium_botrysum']['und']['#suffix'] = '</td>';
+  $form['trichphyton_mix']['und']['#prefix'] = '<td>';
+  $form['trichphyton_mix']['und']['#suffix'] = '</td></tr></table>';
+  
+  $form['lambs_quarter']['und']['#prefix'] = '<table><legend><h5>Antigen Panel #2</h5></legend><tr><td>';
+  $form['lambs_quarter']['und']['#suffix'] = '</td>';
+  $form['palintain']['und']['#prefix'] = '<td>';
+  $form['palintain']['und']['#suffix'] = '</td>';
+  $form['ragweed_mix_gs']['und']['#prefix'] = '<td>';
+  $form['ragweed_mix_gs']['und']['#suffix'] = '</td>';
+  $form['marchelder']['und']['#prefix'] = '<td>';
+  $form['marchelder']['und']['#suffix'] = '</td>';
+  $form['dog_fennel']['und']['#prefix'] = '<td>';
+  $form['dog_fennel']['und']['#suffix'] = '</td></tr>';
+  $form['elm_american']['und']['#prefix'] = '<tr><td>';
+  $form['elm_american']['und']['#suffix'] = '</td>';
+  $form['oak_mix']['und']['#prefix'] = '<td>';
+  $form['oak_mix']['und']['#suffix'] = '</td>';
+  $form['pecan_tree']['und']['#prefix'] = '<td>';
+  $form['pecan_tree']['und']['#suffix'] = '</td>';
+  $form['sweet_gum']['und']['#prefix'] = '<td>';
+  $form['sweet_gum']['und']['#suffix'] = '</td>';
+  $form['walnut_black']['und']['#prefix'] = '<td>';
+  $form['walnut_black']['und']['#suffix'] = '</td></tr></table>';
+  
+  $form['alternariatenuis']['und']['#prefix'] = '<table><legend><h5>Antigen Panel #5</h5></legend><tr><td>';
+  $form['alternariatenuis']['und']['#suffix'] = '</td>';
+  $form['aspergillus_fumigatus']['und']['#prefix'] = '<td>';
+  $form['aspergillus_fumigatus']['und']['#suffix'] = '</td>';
+  $form['botrytis_cinerea']['und']['#prefix'] = '<td>';
+  $form['botrytis_cinerea']['und']['#suffix'] = '</td>';
+  $form['candida']['und']['#prefix'] = '<td>';
+  $form['candida']['und']['#suffix'] = '</td>';
+  $form['cephalosporium']['und']['#prefix'] = '<td>';
+  $form['cephalosporium']['und']['#suffix'] = '</td></tr>';
+  $form['pine_mix']['und']['#prefix'] = '<tr><td>';
+  $form['pine_mix']['und']['#suffix'] = '</td>';
+  $form['sycamore_american']['und']['#prefix'] = '<td>';
+  $form['sycamore_american']['und']['#suffix'] = '</td>';
+  $form['careless_pigweed']['und']['#prefix'] = '<td>';
+  $form['careless_pigweed']['und']['#suffix'] = '</td>';
+  $form['cocklebur']['und']['#prefix'] = '<td>';
+  $form['cocklebur']['und']['#suffix'] = '</td>';
+  $form['dock_sorrel']['und']['#prefix'] = '<td>';
+  $form['dock_sorrel']['und']['#suffix'] = '</td></tr></table>'; 
+  
+  $form['bluegrass_kentucky']['und']['#prefix'] = '<table><legend><h5>Antigen Panel #1</h5></legend><tr><td>';
+  $form['bluegrass_kentucky']['und']['#suffix'] = '</td>';
+  $form['corn_cultivated']['und']['#prefix'] = '<td>';
+  $form['corn_cultivated']['und']['#suffix'] = '</td>';
+  $form['oats_common']['und']['#prefix'] = '<td>';
+  $form['oats_common']['und']['#suffix'] = '</td>';
+  $form['orchard_grass']['und']['#prefix'] = '<td>';
+  $form['orchard_grass']['und']['#suffix'] = '</td>';
+  $form['redtop']['und']['#prefix'] = '<td>';
+  $form['redtop']['und']['#suffix'] = '</td></tr>';
+  $form['positive_histamine']['und']['#prefix'] = '<tr><td>';
+  $form['positive_histamine']['und']['#suffix'] = '</td>';
+  $form['negative_glycerine']['und']['#prefix'] = '<td>';
+  $form['negative_glycerine']['und']['#suffix'] = '</td>';
+  $form['phenol']['und']['#prefix'] = '<td>';
+  $form['phenol']['und']['#suffix'] = '</td>';
+  $form['bahia_grass']['und']['#prefix'] = '<td>';
+  $form['bahia_grass']['und']['#suffix'] = '</td>';
+  $form['johnson_grass']['und']['#prefix'] = '<td>';
+  $form['johnson_grass']['und']['#suffix'] = '</td></tr></table>';
+
+  $form['sweet_vernalgrass']['und']['#prefix'] = '<table><legend><h5>Antigen Panel #6</h5></legend><tr><td>';
+  $form['sweet_vernalgrass']['und']['#suffix'] = '</td>';
+  $form['boxelder_maple']['und']['#prefix'] = '<td>';
+  $form['boxelder_maple']['und']['#suffix'] = '</td>';
+  $form['cedar_mountain']['und']['#prefix'] = '<td>';
+  $form['cedar_mountain']['und']['#suffix'] = '</td>';
+  $form['common_privet']['und']['#prefix'] = '<td>';
+  $form['common_privet']['und']['#suffix'] = '</td>';
+  $form['cottonwood']['und']['#prefix'] = '<td>';
+  $form['cottonwood']['und']['#suffix'] = '</td></tr>';
+  $form['bermuda_grass']['und']['#prefix'] = '<tr><td>';
+  $form['bermuda_grass']['und']['#suffix'] = '</td>';
+  $form['meadow_fescue']['und']['#prefix'] = '<td>';
+  $form['meadow_fescue']['und']['#suffix'] = '</td>';
+  $form['rye_grass']['und']['#prefix'] = '<td>';
+  $form['rye_grass']['und']['#suffix'] = '</td>';
+  $form['timothy']['und']['#prefix'] = '<td>';
+  $form['timothy']['und']['#suffix'] = '</td>';
+  $form['brome_smooth']['und']['#prefix'] = '<td>';
+  $form['brome_smooth']['und']['#suffix'] = '</td></tr></table>';
+  
+  $form['casein']['und']['#prefix'] = '<table><legend><h5>Food Allergy Profile</h5></legend><tr><td>';
+  $form['casein']['und']['#suffix'] = '</td>';
+  $form['milk_cow']['und']['#prefix'] = '<td>';
+  $form['milk_cow']['und']['#suffix'] = '</td>';
+  $form['egg_chicken_white']['und']['#prefix'] = '<td>';
+  $form['egg_chicken_white']['und']['#suffix'] = '</td>';
+  $form['peanut']['und']['#prefix'] = '<td>';
+  $form['peanut']['und']['#suffix'] = '</td></tr>';
+  $form['soybean']['und']['#prefix'] = '<tr><td>';
+  $form['soybean']['und']['#suffix'] = '</td>';
+  $form['pecan']['und']['#prefix'] = '<td>';
+  $form['pecan']['und']['#suffix'] = '</td>';
+  $form['shellfish_mix']['und']['#prefix'] = '<td>';
+  $form['shellfish_mix']['und']['#suffix'] = '</td>';
+  $form['shrimp']['und']['#prefix'] = '<td>';
+  $form['shrimp']['und']['#suffix'] = '</td></tr></table>';
+  
+  $form['actions']['submit']['#value'] = t('Save');
+  $form['actions']['submit_referral'] = $form['actions']['submit'];
+  $form['actions']['submit_referral']['#value'] = t('Save with Referral');
+  $form['actions']['submit_referral']['#submit'][] = 'submit_with_referral';
+  
+  return $form;
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() on practice node creation form. 
+*/ 
+function allergy_form_form_practice_node_form_alter(&$form, &$form_state, $form_id) {
+  dsm(field_attach_view('allergy_test', 'entity', 'full'));
+  dsm(field_info_instances('node', 'allergy_test'));
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() on referral node creation form.
+ */
+function allergy_form_form_referral_node_form_alter(&$form, &$form_state, $form_id) {
+  $form['#validate'][] = 'allergy_form_referral_title_alter';
+  $form['title']['#default_value'] = 'placeholder';
+  $form['title'] = array('#type' => 'hidden');  
+  
+}
+
+
+/**
+ *	Changes the redirect destination for "save with referral" to go to node/add/referral.
+ */
+function submit_with_referral($form, &$form_state) {
+  $form_state['redirect'] = 'node/add/referral';
+ }
+ 
+ /**
+  * Concatenates first/middle/last names into one title.
+  */
+function allergy_form_allergy_test_title_alter($form, &$form_state){
+  $form['title']['#parents'] = array('title');
+  form_set_value($form['title'], $form_state['values']['first_name']['und']['0']['value'] . ' ' . $form_state['values']['middle_name']['und']['0']['value'] . 
+  ' ' . $form_state['values']['field_last_name']['und']['0']['value'], $form_state);
+  }
+ 
+/**
+* Concatenates practice referring to and patient into a coherent title.
+*/
+function allergy_form_referral_title_alter($form, &$form_state){
+  $patient_id = $form_state['values']['field_referral_patient']['und']['0']['target_id'];
+  $practice_id = $form_state['values']['field_referral_practice']['und']['0']['target_id'];
+  $nodes = node_load_multiple(array($patient_id, $practice_id));
+ 
+  $form['title']['#parents'] = array('title');
+  form_set_value($form['title'], $nodes[$patient_id]->title . ' referral to ' . $nodes[$practice_id]->title, $form_state);
+}

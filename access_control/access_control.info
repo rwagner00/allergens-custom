@@ -1,0 +1,6 @@
+name = Access Control
+description = Responsible for managing access control of referrals.
+version = 1.0
+package = Spyderbyte Design Custom
+core = 7.x
+files[] = access_control.module

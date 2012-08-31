@@ -1,0 +1,100 @@
+<?php 
+
+
+
+
+/**
+ * Implements hook_node_access_records().
+ */
+function access_control_node_access_records($node) {
+  if ($node->status) {
+    if ($node->type == 'referral') {
+      $origin = db_select('field_data_field_user_practice', 'p')
+        ->fields('p', array('field_user_practice_target_id'))
+        ->condition('entity_id', $node->uid)
+        ->execute()
+        ->fetchAssoc();
+      $origin = $origin['field_user_practice_target_id'];
+      
+      $grants[] = array(
+        'realm' => 'referral_referral_access',
+        'gid' => $node->field_referral_practice['und']['0']['target_id'],
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0, 
+        'priority' => 0,
+      );
+      
+      $grants[] = array(
+        'realm' => 'referral_origin_access',
+        'gid' => $origin,
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0, 
+        'priority' => 0,
+      );
+    return $grants;
+    }
+    
+    if ($node->type == 'allergy_test') {
+      
+      //Get the practice ID of the person who saved the allergy_test
+      //Then set the grantID as the practice ID.
+      $origin = db_select('field_data_field_user_practice', 'p')
+        ->fields('p', array('field_user_practice_target_id'))
+        ->condition('entity_id', $node->uid)
+        ->execute()
+        ->fetchAssoc();
+      $grants[] = array(
+        'realm' => 'allergy_test_origin_access',
+        'gid' => $origin['field_user_practice_target_id'],
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0, 
+        'priority' => 0,
+      );
+      
+      //Since hook_node_access_records is called on node save, every time
+      //that the allergy test is saved, check and see if there's a referral
+      //on it. If there is, get its id and set the GID to be the practice referred to ID.
+      $patient = db_select('field_data_field_referral_patient', 'p')
+        ->fields('p', 'entity_id')
+        ->condition('field_referral_patient_target_id', $node->nid)
+        ->execute()
+        ->fetchAssoc();
+      if(!isset($patient['field_referral_patient_target_id']) && $patient['field_referral_patient_target_id'] != NULL) {
+        $grants[] = array(
+          'realm' => 'allergy_test_referral_access',
+          'gid' => $patient['field_referral_patient_target_id'],
+          'grant_view' => 1,
+          'grant_update' => 0,
+          'grant_delete' => 0, 
+          'priority' => 0,
+        );
+      }
+    }       
+  }
+}
+ 
+
+
+/**
+ * Implements hook_node_grants().
+ */
+function access_control_node_grants($account, $op) {
+
+  $grants['practice_access_control'] = array(2);
+  
+  
+  return $grants;
+}
+
+
+
+
+
+
+
+
+
+

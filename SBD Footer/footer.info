@@ -1,0 +1,12 @@
+name = Footer
+description = Powered by Spyder Byte Design Footer
+version = 1.0
+package = Spyderbyte Design Custom
+core = 7.x
+files[] = footer.module
+
+; Information added by drush on 2012-07-10
+version = "unknown"
+project = "Spyderbyte Design Footer"
+datestamp = "1341946950"
+

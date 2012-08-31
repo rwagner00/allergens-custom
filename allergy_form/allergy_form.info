@@ -1,0 +1,6 @@
+name = Allergy Form
+description = Responsible for the creation of the actual allergy content type form.
+version = 1.0
+package = Spyderbyte Design Custom
+core = 7.x
+files[] = allergy_form.module
