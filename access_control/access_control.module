@@ -8,14 +8,38 @@
  */
 function access_control_node_access_records($node) {
   if ($node->status) {
+    //Referral Access Controls
     if ($node->type == 'referral') {
-      $origin = db_select('field_data_field_user_practice', 'p')
-        ->fields('p', array('field_user_practice_target_id'))
-        ->condition('entity_id', $node->uid)
-        ->execute()
-        ->fetchAssoc();
-      $origin = $origin['field_user_practice_target_id'];
+      //Set defaults of no access.
+      $grants[] = array(
+        'realm' => 'referral_origin_access',
+        'gid' => 0,
+        'grant_view' => 0,
+        'grant_update' => 0,
+        'grant_delete' => 0, 
+        'priority' => 0,
+      );
+      $grants[] = array(
+        'realm' => 'referral_referral_access',
+        'gid' => 0,
+        'grant_view' => 0,
+        'grant_update' => 0,
+        'grant_delete' => 0, 
+        'priority' => 0,
+      );        
+
       
+      //Grant access to the practice listed as the referring practice.
+      $grants[] = array(
+        'realm' => 'referral_origin_access',
+        'gid' => $node->field_referral_refering_practice['und']['0']['target_id'],
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0, 
+        'priority' => 0,
+      );
+      
+      //Grant access to the practice receiving the referral.
       $grants[] = array(
         'realm' => 'referral_referral_access',
         'gid' => $node->field_referral_practice['und']['0']['target_id'],
@@ -24,19 +48,28 @@ function access_control_node_access_records($node) {
         'grant_delete' => 0, 
         'priority' => 0,
       );
-      
+    return $grants;
+    }
+    
+    //Allergy Test Access Controls
+    if ($node->type == 'allergy_test') {
+      //Set defaults of no access.
       $grants[] = array(
-        'realm' => 'referral_origin_access',
-        'gid' => $origin,
-        'grant_view' => 1,
+        'realm' => 'allergy_test_origin_access',
+        'gid' => 0,
+        'grant_view' => 0,
         'grant_update' => 0,
         'grant_delete' => 0, 
         'priority' => 0,
       );
-    return $grants;
-    }
-    
-    if ($node->type == 'allergy_test') {
+      $grants[] = array(
+        'realm' => 'allergy_test_referral_access',
+        'gid' => 0,
+        'grant_view' => 0,
+        'grant_update' => 0,
+        'grant_delete' => 0, 
+        'priority' => 0,
+      );  
       
       //Get the practice ID of the person who saved the allergy_test
       //Then set the grantID as the practice ID.
@@ -58,21 +91,55 @@ function access_control_node_access_records($node) {
       //that the allergy test is saved, check and see if there's a referral
       //on it. If there is, get its id and set the GID to be the practice referred to ID.
       $patient = db_select('field_data_field_referral_patient', 'p')
-        ->fields('p', 'entity_id')
+        ->fields('p', array('entity_id'))
         ->condition('field_referral_patient_target_id', $node->nid)
         ->execute()
-        ->fetchAssoc();
-      if(!isset($patient['field_referral_patient_target_id']) && $patient['field_referral_patient_target_id'] != NULL) {
+        ->fetchAllAssoc('entity_id');
+      if($patient != NULL) {
+        foreach ($patient as $key => $value) {
+         $referrallist[] = $key;
+        }
+      }
+      $practices = db_select('field_data_field_referral_practice', 'p')
+        ->fields('p', array('field_referral_practice_target_id'))
+        ->condition('entity_id', $referrallist)
+        ->execute()
+        ->fetchAllAssoc('field_referral_practice_target_id');
+      foreach ($practices as $key => $value) {
         $grants[] = array(
           'realm' => 'allergy_test_referral_access',
-          'gid' => $patient['field_referral_patient_target_id'],
+          'gid' => $key,
           'grant_view' => 1,
           'grant_update' => 0,
           'grant_delete' => 0, 
           'priority' => 0,
-        );
+        );        
       }
-    }       
+    } 
+
+    //Practice Access Controls
+    //Essentially just "if logged in can access".
+    if ($node->type == 'practice') {
+      //Set defaults of no access.
+      $grants[] = array(
+        'realm' => 'practice_access',
+        'gid' => 0,
+        'grant_view' => 0,
+        'grant_update' => 0,
+        'grant_delete' => 0, 
+        'priority' => 0,
+      );
+      //Allow Access if authenticated
+       $grants[] = array(
+        'realm' => 'practice_access',
+        'gid' => 1,
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0, 
+        'priority' => 0,
+      );    
+    return $grants;
+    }
   }
 }
  
@@ -82,11 +149,42 @@ function access_control_node_access_records($node) {
  * Implements hook_node_grants().
  */
 function access_control_node_grants($account, $op) {
+  //Get the ID of the practice that the current user is logged in as.
+  $practiceid = db_select('field_data_field_user_practice', 'p')
+    ->fields('p', array('field_user_practice_target_id'))
+    ->condition('entity_id', $account->uid)
+    ->execute()
+    ->fetchAssoc();
+ $practiceid = $practiceid['field_user_practice_target_id'];
 
-  $grants['practice_access_control'] = array(2);
-  
-  
-  return $grants;
+ //if user belongs to a practice, allow access to what they need($practiceid), lock down what they don't(0).
+  if ($practiceid != NULL) {
+    $grants['referral_origin_access'] = array(0, $practiceid);
+    $grants['referral_referral_access'] = array(0, $practiceid);
+    $grants['allergy_test_origin_access'] = array(0, $practiceid);
+    $grants['allergy_test_referral_access'] = array(0, $practiceid);
+    $grants['practice_access'] = array(1);
+    return $grants;
+  }
+  //if user doesn't belong to a practice, lock down the site.
+  else {
+    $grants['referral_origin_access'] = array(0);
+    $grants['referral_referral_access'] = array(0);
+    $grants['allergy_test_origin_access'] = array(0);
+    $grants['allergy_test_referral_access'] = array(0);
+    $grants['practice_access'] = array(0);
+    return $grants;
+  }
+}
+
+/**
+ * Implements hook_node_submit().
+ */
+function access_control_node_submit($node, $form, &$form_state) {
+  if ($node->type == 'referral') {
+    $tempnode = node_load($node->field_referral_practice['und']['0']['target_id']);
+    node_save($tempnode);
+  }
 }
 
 
