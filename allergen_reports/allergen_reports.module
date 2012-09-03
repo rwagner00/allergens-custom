@@ -4,12 +4,22 @@ hook_menu {
   menu array for the page to output all this.
 }
 
-$practices = db_select -> get the list of practices from the node table.
-  Convert to array
+
+function allergen_reports_output() {
+$practices = db_select('node', 'n')
+  ->condition('type', 'practice)
+  ->fields('n', array('title', 'nid'))
+  ->execute()
+  ->fetchAllAssoc('title');
 	
-foreach($practices) {
-  $count = db_select -> get list of referrals based on practices and then count.
-  Convert to array where the key is the practice name and the count is the value.
+foreach($practices as $key => $value) {
+  $count = db_select('node', 'n')
+  	->condition('nid', $value)
+  	->fields('n', array('nid')
+  	->execute()
+  	->count?
+  
+    Convert to array where the key is the practice name and the count is the value.
 }
 
 $output = '<table>';
@@ -18,4 +28,5 @@ foreach($count as $key => $value) {
 }
 $output .= '</table>';
 
-return $output.
+return $output;
+}
