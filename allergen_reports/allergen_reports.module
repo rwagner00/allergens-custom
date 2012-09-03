@@ -1,0 +1,32 @@
+<?php 
+
+hook_menu {
+  menu array for the page to output all this.
+}
+
+
+function allergen_reports_output() {
+$practices = db_select('node', 'n')
+  ->condition('type', 'practice)
+  ->fields('n', array('title', 'nid'))
+  ->execute()
+  ->fetchAllAssoc('title');
+	
+foreach($practices as $key => $value) {
+  $count = db_select('node', 'n')
+  	->condition('nid', $value)
+  	->fields('n', array('nid')
+  	->execute()
+  	->count?
+  
+    Convert to array where the key is the practice name and the count is the value.
+}
+
+$output = '<table>';
+foreach($count as $key => $value) {
+ $output .= '<tr><td>$key</td><td>$value</td></tr>';
+}
+$output .= '</table>';
+
+return $output;
+}

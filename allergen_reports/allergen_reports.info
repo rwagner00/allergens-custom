@@ -1,0 +1,6 @@
+name = Allergen Reports
+description = Reports which practices have created how many referrals.
+version = 1.0
+package = Spyderbyte Design Custom
+core = 7.x
+files[] = allergy_reports.module
