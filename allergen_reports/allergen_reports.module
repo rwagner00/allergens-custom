@@ -1,0 +1,21 @@
+<?php 
+
+hook_menu {
+  menu array for the page to output all this.
+}
+
+$practices = db_select -> get the list of practices from the node table.
+  Convert to array
+	
+foreach($practices) {
+  $count = db_select -> get list of referrals based on practices and then count.
+  Convert to array where the key is the practice name and the count is the value.
+}
+
+$output = '<table>';
+foreach($count as $key => $value) {
+ $output .= '<tr><td>$key</td><td>$value</td></tr>';
+}
+$output .= '</table>';
+
+return $output.
