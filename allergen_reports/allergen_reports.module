@@ -1,32 +1,153 @@
 <?php 
 
-hook_menu {
-  menu array for the page to output all this.
+/**
+ * Implements hook_menu().
+ */
+function allergen_reports_menu() {
+  $items = array();
+  $items['referral-reports/%/%'] = array(
+    'title' => 'Referral Reporting',
+    'description' => '',
+    'page callback' => 'allergen_reports_output',
+    'page arguments' => array(1, 2),
+    'access callback' => 'allergen_reports_rolecheck',
+  );
+  $items['referral-reports'] = array(
+    'title' => 'Referral Reporting',
+    'page callback' => 'allergen_reports_redirect',
+    'page arguments' => array(),
+    'access callback' => 'allergen_reports_rolecheck',
+  );
+  return $items;
 }
 
+//Authentication check for the reports page.
+function allergen_reports_rolecheck() {
+  global $user;
+  if (in_array('authenticated user', $user->roles)) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
 
-function allergen_reports_output() {
-$practices = db_select('node', 'n')
-  ->condition('type', 'practice)
-  ->fields('n', array('title', 'nid'))
-  ->execute()
-  ->fetchAllAssoc('title');
-	
-foreach($practices as $key => $value) {
-  $count = db_select('node', 'n')
-  	->condition('nid', $value)
-  	->fields('n', array('nid')
-  	->execute()
-  	->count?
+/*
+ * If the user goes straight to the referral-reports page, redirect to 
+ * the current month/year.
+ */
+function allergen_reports_redirect() {
+  $month = date('n');
+  $year = date('Y');
+  header("Location: " . base_path() . "referral-reports/$month/$year");
+}
+
+/*
+ * Generate the output for the reports page.
+ */
+function allergen_reports_output($month, $year) {
   
-    Convert to array where the key is the practice name and the count is the value.
+  //Just in case someone has managed to hit the page without supplying values,
+  //supply defaults.
+  if ($month == "") {
+    $month = date('n');
+  }
+  if ($year == "") {
+    $year = date('Y');
+  }
+  
+  //Get titles and NID's of ALL practices.
+  $practices = db_select('node', 'n')
+    ->condition('type', 'practice')
+    ->fields('n', array('title', 'nid'))
+    ->execute()
+    ->fetchAllAssoc('title');
+    
+  //Generate a more useful and descriptive array for the next query.
+  foreach ($practices as $key => $value) {
+    $practicelist[$key] = $value->nid; 
+  }
+  
+  $rows = array();
+  
+   // For each practice in the list, query all of their referrals from the 
+   // field_referral_refering_practice table, then query a list of all 
+   // referrals matching the date criteria, join and count.
+  foreach($practicelist as $key => $value) {
+    $referrals = db_select('field_data_field_referral_refering_practice', 'r')
+    	->condition('field_referral_refering_practice_target_id', $value)
+    	->fields('r', array('entity_id'));
+    $nodes = db_select('node', 'n')
+      ->condition('type', 'referral')
+      ->condition('created', mktime(0, 0, 0, $month, 1, $year), '>')
+      ->condition('created', mktime(0, 0, 0, $month+1, 0, $year), '<')
+      ->fields('n', array('nid', 'created'));
+    $referrals->join($nodes, 'n', 'n.nid = r.entity_id');
+    $count = $referrals
+      ->execute()
+      ->rowCount();
+    //Each result set is a new array to provide Drupal with expected values 
+    //in theme(table);
+    $row = array($key, $count);
+    $rows[] = $row;
+  }
+  
+  //Render the form that allows users to specify the date they want reports for.
+  $output = render(drupal_get_form('allergen_reports_url_form'));
+  //Render table of results.
+  $header = array('Practice Name', 'Number of Referrals in ' . date('F', mktime(0, 0, 0, $month, 1, $year)) .', ' . $year);
+  $output .= theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+  ));
+  return $output;
 }
 
-$output = '<table>';
-foreach($count as $key => $value) {
- $output .= '<tr><td>$key</td><td>$value</td></tr>';
+function allergen_reports_url_form() {
+  $cyear = date('Y');
+  //Generate an array of the last 10 years from most recent to furthest away.  
+  $keys = array_reverse(range($cyear - 10, $cyear));
+  $values = $keys;
+  $year_range = array_combine($keys, $values);
+  
+  //Keyed array of months.
+  $months = array(
+		'1' => t('January'),
+    '2' => t('February'),
+    '3' => t('March'),
+    '4' => t('April'),
+    '5' => t('May'),
+    '6' => t('June'),
+    '7' => t('July'),
+    '8' => t('August'),
+    '9' => t('September'),
+    '10' => t('October'),
+    '11' => t('November'),
+    '12' => t('December'),  
+  );
+  
+  $form = array();
+  $form['month'] = array(
+    '#type' => 'select',
+    '#title' => t('Month'),
+  	'#default_value' => arg(1),
+    '#options' => $months,
+  );
+  $form['year'] = array(
+    '#type' => 'select',
+    '#title' => t('Year'),
+    '#default_value' => arg(2),
+    '#options' => $year_range,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Go'),
+    '#submit' => array('referral_select_go'),
+  );
+  return $form;
 }
-$output .= '</table>';
 
-return $output;
+function referral_select_go($form, &$form_state) {
+  //On submit, do nothing except send the user to a new page based on their input.
+  $form_state['redirect'] = 'referral-reports/' . $form_state['values']['month'] . '/' . $form_state['values']['year'];
 }

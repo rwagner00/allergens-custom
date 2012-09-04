@@ -167,14 +167,6 @@ function allergy_form_form_allergy_test_node_form_alter(&$form, &$form_state, $f
 }
 
 /**
- * Implements hook_form_BASE_FORM_ID_alter() on practice node creation form. 
-*/ 
-function allergy_form_form_practice_node_form_alter(&$form, &$form_state, $form_id) {
-  dsm(field_attach_view('allergy_test', 'entity', 'full'));
-  dsm(field_info_instances('node', 'allergy_test'));
-}
-
-/**
  * Implements hook_form_BASE_FORM_ID_alter() on referral node creation form.
  */
 function allergy_form_form_referral_node_form_alter(&$form, &$form_state, $form_id) {

@@ -1,4 +1,0 @@
-name = RMS Allergy
-description = Customizations for RMS Allergy application.
-core = 7.x
-stylesheets[all][] = rmsallergy.css
