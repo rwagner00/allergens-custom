@@ -187,6 +187,7 @@ function access_control_node_insert($node) {
   if ($node->type == 'referral') {
     $tempnode = node_load($node->field_referral_patient['und']['0']['target_id']);
     node_save($tempnode);
+    //node_access_acquire_grants($tempnode);
   }
 }
 
@@ -197,16 +198,19 @@ function access_control_node_update($node) {
   if ($node->type == 'referral') {
     $tempnode = node_load($node->field_referral_patient['und']['0']['target_id']);
     node_save($tempnode);
+    //node_access_acquire_grants($tempnode);
   } 
 }
 
 /**
  * Implements hook_entity_delete().
+ * @todo change node save to node access aquire grants. Should be much faster.
  */
 function access_control_entity_delete($entity, $type) {
   if ($entity->type == 'referral') {
     $tempnode = node_load($entity->field_referral_patient['und']['0']['target_id']);
     node_save($tempnode);
+    //node_access_acquire_grants($tempnode);
   }
 }
 

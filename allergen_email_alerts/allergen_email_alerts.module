@@ -1,0 +1,45 @@
+<?php 
+
+/**
+ * Implements hook_node_insert().
+ */
+function allergen_email_alerts_node_insert($node) {
+  if ($node->type == 'referral') {
+    $practiceName = db_select('node', 'n')
+      ->condition('nid', $node->field_referral_practice['und']['0']['target_id'])
+      ->fields('n', array('title'))
+      ->execute()
+      ->fetchAssoc();
+      $params = $practiceName['title'];
+    $to_apoc = db_select('field_data_field_practice_admin_poc_email', 'e')
+      ->condition('entity_id', $node->field_referral_practice['und']['0']['target_id'])
+      ->fields('e', array('field_practice_admin_poc_email_value'))
+      ->execute()
+      ->fetchAssoc();
+    $to_cpoc = db_select('field_data_field_practice_clinic_poc_email', 'e')
+      ->condition('entity_id', $node->field_referral_practice['und']['0']['target_id'])
+      ->fields('e', array('field_practice_clinic_poc_email_value'))
+      ->execute()
+      ->fetchAssoc();
+      
+    $from = 'web@allergens.com';
+    if (isset($practiceName) && ($practiceName != NULL)) {
+      $params = $practiceName['title'];  
+    }
+    drupal_mail('allergen_email_alerts', 'referral', $to_apoc['field_practice_admin_poc_email_value'], language_default(), $params, $from, TRUE);
+    drupal_mail('allergen_email_alerts', 'referral', $to_cpoc['field_practice_clinic_poc_email_value'], language_default(), $params, $from, TRUE);
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function allergen_email_alerts_mail($key, &$message, $params) {
+	$language = $message['language'];
+	switch($key) {
+		case 'referral':
+		$message['subject'] = t('You have received a new referral'); //$vars required even if not used to get $language in there
+		$message['body'][] = 'You have recieved a new referral';
+		break;
+	}
+}

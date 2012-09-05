@@ -1,0 +1,6 @@
+name = Allergen Email Alerts
+description = Emails the points of contact for a practice when a referral is created.
+version = 1.0
+package = Spyderbyte Design Custom
+core = 7.x
+files[] = allergen_email_alerts.module

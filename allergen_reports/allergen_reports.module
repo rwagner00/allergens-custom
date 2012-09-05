@@ -8,23 +8,49 @@ function allergen_reports_menu() {
   $items['referral-reports/%/%'] = array(
     'title' => 'Referral Reporting',
     'description' => '',
-    'page callback' => 'allergen_reports_output',
+    'page callback' => 'referral_reports_output',
     'page arguments' => array(1, 2),
     'access callback' => 'allergen_reports_rolecheck',
   );
   $items['referral-reports'] = array(
     'title' => 'Referral Reporting',
-    'page callback' => 'allergen_reports_redirect',
+    'page callback' => 'referral_reports_redirect',
     'page arguments' => array(),
+    'access callback' => 'allergen_reports_rolecheck',
+  );
+  $items['allergy-test-reports/%/%'] = array(
+    'title' => 'Allergy Test Counts',
+    'page callback' => 'allergy_report_output',
+    'page arguments' => array(1, 2),
+    'access callback' => 'allergen_reports_rolecheck',
+  );
+  $items['allergy-test-reports'] = array(
+    'title' => 'Allergy Test Counts',
+    'page callback' => 'allergy_report_redirect',
+    'page arguments' => array(),
+    'access callback' => 'allergen_reports_rolecheck',
+  );
+  $items['incoming-referral-reports'] = array(
+    'title' => 'Incoming Referral Counts',
+    'page callback' => 'incoming_referral_redirect',
+    'page arguments' => array(),
+    'access callback' => 'allergen_reports_rolecheck',
+  );  
+  $items['incoming-referral-reports/%/%'] = array(
+    'title' => 'Incoming Referral Counts',
+    'page callback' => 'incoming_referral_reports',
+    'page arguments' => array(1, 2),
     'access callback' => 'allergen_reports_rolecheck',
   );
   return $items;
 }
 
-//Authentication check for the reports page.
+/*
+ * Authentication check for the reports page.
+ */
 function allergen_reports_rolecheck() {
   global $user;
-  if (in_array('authenticated user', $user->roles)) {
+  if (in_array('site manager', $user->roles)) {
     return TRUE;
   }
   else {
@@ -36,16 +62,36 @@ function allergen_reports_rolecheck() {
  * If the user goes straight to the referral-reports page, redirect to 
  * the current month/year.
  */
-function allergen_reports_redirect() {
+function referral_reports_redirect() {
   $month = date('n');
   $year = date('Y');
   header("Location: " . base_path() . "referral-reports/$month/$year");
 }
 
 /*
+ * If user goes straight to allergy-test-reports, redirect to
+ * the reports page with current month/year arguments.
+ */
+function allergy_report_redirect() {
+  $month = date('n');
+  $year = date('Y');
+  header("Location: " . base_path() . "allergy-test-reports/$month/$year");  
+}
+
+/*
+ * If user goes straight to incoming-referral-reports, redirect to
+ * the reports page with current month/year arguments.
+ */
+function incoming_referral_redirect() {
+  $month = date('n');
+  $year = date('Y');
+  header("Location: " . base_path() . "incoming-referral-reports/$month/$year");  
+}
+
+/*
  * Generate the output for the reports page.
  */
-function allergen_reports_output($month, $year) {
+function referral_reports_output($month, $year) {
   
   //Just in case someone has managed to hit the page without supplying values,
   //supply defaults.
@@ -95,7 +141,8 @@ function allergen_reports_output($month, $year) {
   //Render the form that allows users to specify the date they want reports for.
   $output = render(drupal_get_form('allergen_reports_url_form'));
   //Render table of results.
-  $header = array('Practice Name', 'Number of Referrals in ' . date('F', mktime(0, 0, 0, $month, 1, $year)) .', ' . $year);
+  $header = array('Practice Name', 'Number of Referrals Created in ' 
+    . date('F', mktime(0, 0, 0, $month, 1, $year)) .', ' . $year);
   $output .= theme('table', array(
     'header' => $header,
     'rows' => $rows,
@@ -103,6 +150,128 @@ function allergen_reports_output($month, $year) {
   return $output;
 }
 
+
+
+function allergy_report_output($month, $year) {
+  
+  //Just in case someone has managed to hit the page without supplying values,
+  //supply defaults.
+  if ($month == "") {
+    $month = date('n');
+  }
+  if ($year == "") {
+    $year = date('Y');
+  }
+  
+  //Get titles and NID's of ALL practices.
+  $practices = db_select('node', 'n')
+    ->condition('type', 'practice')
+    ->fields('n', array('title', 'nid'))
+    ->execute()
+    ->fetchAllAssoc('title');
+    
+  //Generate a more useful and descriptive array for the next query.
+  foreach ($practices as $key => $value) {
+    $practicelist[$key] = $value->nid; 
+  }
+   
+   // For each practice in the list, query all of their referrals from the 
+   // field_referral_refering_practice table, then query a list of all 
+   // referrals matching the date criteria, join and count.
+  foreach($practicelist as $key => $value) {
+    $referrals = db_select('field_data_field_user_practice', 'u')
+    	->condition('field_user_practice_target_id', $value)
+    	->fields('u', array('entity_id'));
+    $nodes = db_select('node', 'n')
+      ->condition('type', 'allergy_test')
+      ->condition('created', mktime(0, 0, 0, $month, 1, $year), '>')
+      ->condition('created', mktime(0, 0, 0, $month+1, 0, $year), '<')
+      ->fields('n', array('uid', 'created'));
+    $referrals->join($nodes, 'n', 'n.uid = u.entity_id');
+    $count = $referrals
+      ->execute()
+      ->rowCount();
+    //Each result set is a new array to provide Drupal with expected values 
+    //in theme(table);
+    $row = array($key, $count);
+    $rows[] = $row;
+  }
+  
+  //Render the form that allows users to specify the date they want reports for.
+  $output = render(drupal_get_form('allergen_reports_url_form'));
+  //Render table of results.
+  $header = array('Practice Name', 'Number of Allergy Tests Created in ' 
+    . date('F', mktime(0, 0, 0, $month, 1, $year)) .', ' . $year);
+  $output .= theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+  ));
+  return $output;  
+}
+
+function incoming_referral_reports($month, $year) {
+  
+  //Just in case someone has managed to hit the page without supplying values,
+  //supply defaults.
+  if ($month == "") {
+    $month = date('n');
+  }
+  if ($year == "") {
+    $year = date('Y');
+  }
+  
+  //Get titles and NID's of ALL practices.
+  $practices = db_select('node', 'n')
+    ->condition('type', 'practice')
+    ->fields('n', array('title', 'nid'))
+    ->execute()
+    ->fetchAllAssoc('title');
+    
+  //Generate a more useful and descriptive array for the next query.
+  foreach ($practices as $key => $value) {
+    $practicelist[$key] = $value->nid; 
+  }
+  
+  $rows = array();
+  
+   // For each practice in the list, query all of their referrals from the 
+   // field_referral_refering_practice table, then query a list of all 
+   // referrals matching the date criteria, join and count.
+  foreach($practicelist as $key => $value) {
+    $referrals = db_select('field_data_field_referral_practice', 'r')
+    	->condition('field_referral_practice_target_id', $value)
+    	->fields('r', array('entity_id'));
+    $nodes = db_select('node', 'n')
+      ->condition('type', 'referral')
+      ->condition('created', mktime(0, 0, 0, $month, 1, $year), '>')
+      ->condition('created', mktime(0, 0, 0, $month+1, 0, $year), '<')
+      ->fields('n', array('nid', 'created'));
+    $referrals->join($nodes, 'n', 'n.nid = r.entity_id');
+    $count = $referrals
+      ->execute()
+      ->rowCount();
+    //Each result set is a new array to provide Drupal with expected values 
+    //in theme(table);
+    $row = array($key, $count);
+    $rows[] = $row;
+  }
+  
+  //Render the form that allows users to specify the date they want reports for.
+  $output = render(drupal_get_form('allergen_reports_url_form'));
+  //Render table of results.
+  $header = array('Practice Name', 'Number of Referrals Created in ' 
+    . date('F', mktime(0, 0, 0, $month, 1, $year)) .', ' . $year);
+  $output .= theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+  ));
+  return $output;
+}
+
+
+/*
+ * Generates form for selecting month/year.
+ */
 function allergen_reports_url_form() {
   $cyear = date('Y');
   //Generate an array of the last 10 years from most recent to furthest away.  
