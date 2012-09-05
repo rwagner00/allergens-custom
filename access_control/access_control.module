@@ -208,13 +208,27 @@ function access_control_node_update($node) {
  */
 function access_control_entity_delete($entity, $type) {
   if ($entity->type == 'referral') {
-    $tempnode = node_load($entity->field_referral_patient['und']['0']['target_id']);
-    node_save($tempnode);
-    //node_access_acquire_grants($tempnode);
+    //$tempnode = node_load($entity->field_referral_patient['und']['0']['target_id']);
+    //node_save($tempnode);
+    $rebuild = array();
+    $rebuild = variable_get('permissions_rebuild', '');
+    $rebuild[] = $entity->field_referral_patient['und']['0']['target_id'];
+    variable_set('permissions_rebuild', $rebuild);
   }
 }
 
-
+/**
+ * Implements hook_cron().
+ */
+function access_control_cron() {
+  $rebuild = array();
+  $rebuild = variable_get('permissions_rebuild','');
+  foreach ($rebuild as $value) {
+    $temp = node_load($value);
+    node_save($temp);
+  }
+  variable_del('permissions_rebuild');
+}
 
 
 

@@ -2,20 +2,23 @@
 
 /**
  * Implements hook_node_insert().
+ * Only want the emails to fire when a new referral is created.
  */
 function allergen_email_alerts_node_insert($node) {
   if ($node->type == 'referral') {
+    //Get the actual practice name.
     $practiceName = db_select('node', 'n')
       ->condition('nid', $node->field_referral_practice['und']['0']['target_id'])
       ->fields('n', array('title'))
       ->execute()
       ->fetchAssoc();
-      $params = $practiceName['title'];
+    //Get the email address of the administrative point of contact.
     $to_apoc = db_select('field_data_field_practice_admin_poc_email', 'e')
       ->condition('entity_id', $node->field_referral_practice['und']['0']['target_id'])
       ->fields('e', array('field_practice_admin_poc_email_value'))
       ->execute()
       ->fetchAssoc();
+    //Get the email address of the clinical point of contact.
     $to_cpoc = db_select('field_data_field_practice_clinic_poc_email', 'e')
       ->condition('entity_id', $node->field_referral_practice['und']['0']['target_id'])
       ->fields('e', array('field_practice_clinic_poc_email_value'))
@@ -23,9 +26,12 @@ function allergen_email_alerts_node_insert($node) {
       ->fetchAssoc();
       
     $from = 'web@allergens.com';
+    //Practice doing the referring currently isn't required.
+    //Check to make sure it's actually there before we set $params.
     if (isset($practiceName) && ($practiceName != NULL)) {
       $params = $practiceName['title'];  
     }
+    //Send emails.
     drupal_mail('allergen_email_alerts', 'referral', $to_apoc['field_practice_admin_poc_email_value'], language_default(), $params, $from, TRUE);
     drupal_mail('allergen_email_alerts', 'referral', $to_cpoc['field_practice_clinic_poc_email_value'], language_default(), $params, $from, TRUE);
   }
@@ -38,8 +44,9 @@ function allergen_email_alerts_mail($key, &$message, $params) {
 	$language = $message['language'];
 	switch($key) {
 		case 'referral':
-		$message['subject'] = t('You have received a new referral'); //$vars required even if not used to get $language in there
-		$message['body'][] = 'You have recieved a new referral';
+		$message['subject'] = t('You have received a new referral');
+		$message['body'][] = 'You have recieved a new referral from ' . $params;
+		$message['body'][] = 'Please visit ' . base_path() . 'view-incoming-referrals' . ' to view it.';
 		break;
 	}
 }

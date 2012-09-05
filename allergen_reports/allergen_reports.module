@@ -6,14 +6,14 @@
 function allergen_reports_menu() {
   $items = array();
   $items['referral-reports/%/%'] = array(
-    'title' => 'Referral Reporting',
+    'title' => 'Outgoing Referral Count',
     'description' => '',
     'page callback' => 'referral_reports_output',
     'page arguments' => array(1, 2),
     'access callback' => 'allergen_reports_rolecheck',
   );
   $items['referral-reports'] = array(
-    'title' => 'Referral Reporting',
+    'title' => 'Outgoing Referral Count',
     'page callback' => 'referral_reports_redirect',
     'page arguments' => array(),
     'access callback' => 'allergen_reports_rolecheck',
@@ -50,7 +50,7 @@ function allergen_reports_menu() {
  */
 function allergen_reports_rolecheck() {
   global $user;
-  if (in_array('site manager', $user->roles)) {
+  if (in_array('site manager', $user->roles) || in_array('developer', $user->roles)) {
     return TRUE;
   }
   else {
@@ -259,7 +259,7 @@ function incoming_referral_reports($month, $year) {
   //Render the form that allows users to specify the date they want reports for.
   $output = render(drupal_get_form('allergen_reports_url_form'));
   //Render table of results.
-  $header = array('Practice Name', 'Number of Referrals Created in ' 
+  $header = array('Practice Name', 'Number of Referrals Received in ' 
     . date('F', mktime(0, 0, 0, $month, 1, $year)) .', ' . $year);
   $output .= theme('table', array(
     'header' => $header,
@@ -295,6 +295,7 @@ function allergen_reports_url_form() {
     '12' => t('December'),  
   );
   
+  //Generate form for selection of month/day and Go button.
   $form = array();
   $form['month'] = array(
     '#type' => 'select',
